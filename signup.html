@@ -9,8 +9,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <script src="./supabase.js"></script>
-    
     <script>
         tailwind.config = {
             theme: {
@@ -131,6 +129,12 @@
     </div>
 
     <script>
+        // 1. Initialize Supabase Directly Here
+        const SUPABASE_URL = "https://kzhstchwhobdmqtgpbjx.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6aHN0Y2h3aG9iZG1xdGdwYmp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDEwNTgsImV4cCI6MjA5MjY3NzA1OH0.Pet5e_VD4grq55TZieIhDCh3WI8PuGAKEJpwLA3_eak";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 2. UI Logic
         let selectedRole = 'labour';
         
         const btnLabour = document.getElementById('btnLabour');
@@ -166,7 +170,6 @@
             btnSpinner.classList.remove('hidden');
             messageBox.classList.add('hidden');
 
-            // Using supabaseClient from our imported supabase.js file!
             const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: password,
@@ -189,7 +192,6 @@
                 messageBox.textContent = "Account created! Redirecting to login...";
                 messageBox.className = "text-xs text-center py-3 rounded-xl font-medium bg-white/5 text-white border border-white/10 mt-4 block";
                 
-                // Redirect to login page using relative path
                 setTimeout(() => {
                     window.location.href = "./login.html";
                 }, 1500);
