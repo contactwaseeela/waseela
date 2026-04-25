@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waseela | Join</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="./supabase.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    boxShadow: {
+                        '3d-outer': '20px 20px 60px rgba(0,0,0,0.8), -10px -10px 40px rgba(255,255,255,0.05)',
+                        '3d-inner': 'inset 5px 5px 10px rgba(0,0,0,0.5), inset -2px -2px 5px rgba(255,255,255,0.05)',
+                        '3d-button': '5px 5px 15px rgba(0,0,0,0.4), -2px -2px 10px rgba(255,255,255,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        
+        body {
+            background-color: #0d0d12;
+            color: #fafafa;
+            overflow: hidden;
+            perspective: 1200px;
+        }
+
+        .scene { transform-style: preserve-3d; }
+
+        .card-3d {
+            background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(0,0,0,0.2));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transform: translateZ(50px) rotateX(2deg) rotateY(-2deg);
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .card-3d:hover { transform: translateZ(60px) rotateX(0deg) rotateY(0deg); }
+
+        .content-3d {
+            transform: translateZ(40px);
+            transform-style: preserve-3d;
+        }
+
+        .ambient-orb-1 {
+            position: absolute; top: 0; left: 20%; width: 40vw; height: 40vw;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(0,0,0,0) 60%);
+            transform: translateZ(-100px); border-radius: 50%;
+        }
+
+        .ambient-orb-2 {
+            position: absolute; bottom: 0; right: 10%; width: 50vw; height: 50vw;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(0,0,0,0) 60%);
+            transform: translateZ(-200px); border-radius: 50%;
+        }
+        
+        .btn-press { transition: all 0.15s ease; }
+        .btn-press:active {
+            transform: translateY(4px) translateZ(0px);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative px-4 font-sans scene">
+
+    <div class="ambient-orb-1"></div>
+    <div class="ambient-orb-2"></div>
+
+    <div class="w-full max-w-[420px] p-8 rounded-3xl card-3d shadow-3d-outer">
+        <div class="content-3d">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-semibold tracking-tight mb-2 drop-shadow-lg">Create Account</h1>
+                <p class="text-white/40 text-sm font-light">Join Waseela and build the future.</p>
+            </div>
+
+            <div class="relative flex w-full bg-[#0a0a0e] rounded-xl p-1 mb-8 shadow-3d-inner">
+                <div id="slider" class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-[#1a1a24] rounded-lg shadow-3d-button transition-transform duration-300 ease-out z-0"></div>
+                
+                <button type="button" id="btnLabour" class="flex-1 py-2.5 text-sm font-medium z-10 text-white transition-colors duration-300">
+                    I am a Labourer
+                </button>
+                <button type="button" id="btnCompany" class="flex-1 py-2.5 text-sm font-medium z-10 text-white/40 transition-colors duration-300">
+                    I am Hiring
+                </button>
+            </div>
+
+            <form id="signupForm" class="space-y-5">
+                <div>
+                    <input type="text" id="fullName" required placeholder="Full Name" 
+                        class="w-full bg-[#0a0a0e] shadow-3d-inner border border-white/5 rounded-xl px-5 py-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-all">
+                </div>
+
+                <div>
+                    <input type="email" id="email" required placeholder="Email Address" 
+                        class="w-full bg-[#0a0a0e] shadow-3d-inner border border-white/5 rounded-xl px-5 py-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-all">
+                </div>
+
+                <div>
+                    <input type="password" id="password" required placeholder="Password" 
+                        class="w-full bg-[#0a0a0e] shadow-3d-inner border border-white/5 rounded-xl px-5 py-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-all">
+                </div>
+
+                <div id="messageBox" class="hidden text-xs text-center py-2 rounded-lg font-medium"></div>
+
+                <button type="submit" id="submitBtn" 
+                    class="w-full mt-4 bg-white text-black font-semibold py-4 rounded-xl shadow-3d-button btn-press flex justify-center items-center">
+                    <span id="btnText">Continue</span>
+                    <svg id="btnSpinner" class="animate-spin hidden h-4 w-4 ml-2 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center text-sm text-white/40 font-light">
+                Already have an account? 
+                <a href="./login.html" class="text-white hover:text-blue-400 font-medium transition-all">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = 'labour';
+        
+        const btnLabour = document.getElementById('btnLabour');
+        const btnCompany = document.getElementById('btnCompany');
+        const slider = document.getElementById('slider');
+        const form = document.getElementById('signupForm');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const messageBox = document.getElementById('messageBox');
+
+        btnLabour.addEventListener('click', () => {
+            selectedRole = 'labour';
+            slider.style.transform = 'translateX(0)';
+            btnLabour.classList.replace('text-white/40', 'text-white');
+            btnCompany.classList.replace('text-white', 'text-white/40');
+        });
+
+        btnCompany.addEventListener('click', () => {
+            selectedRole = 'company';
+            slider.style.transform = 'translateX(100%)';
+            btnCompany.classList.replace('text-white/40', 'text-white');
+            btnLabour.classList.replace('text-white', 'text-white/40');
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            btnText.textContent = "Creating account...";
+            btnSpinner.classList.remove('hidden');
+            messageBox.classList.add('hidden');
+
+            // Using supabaseClient from our imported supabase.js file!
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: {
+                        full_name: fullName,
+                        role: selectedRole
+                    }
+                }
+            });
+
+            btnText.textContent = "Continue";
+            btnSpinner.classList.add('hidden');
+            messageBox.classList.remove('hidden');
+
+            if (error) {
+                messageBox.textContent = error.message;
+                messageBox.className = "text-xs text-center py-3 rounded-xl font-medium bg-red-500/10 text-red-400 border border-red-500/20 mt-4 block";
+            } else {
+                messageBox.textContent = "Account created! Redirecting to login...";
+                messageBox.className = "text-xs text-center py-3 rounded-xl font-medium bg-white/5 text-white border border-white/10 mt-4 block";
+                
+                // Redirect to login page using relative path
+                setTimeout(() => {
+                    window.location.href = "./login.html";
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>
